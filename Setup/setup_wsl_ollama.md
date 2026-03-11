@@ -55,4 +55,8 @@ response = requests.post(url, json=payload)
 print(response.json()["response"])
 ```
 
-If the script successfully returns a generated text string, the local hybrid architecture is fully operational.
+> **⚠️ Connection Error?**
+> If you receive a `ConnectionRefusedError`, `WinError 10061`, or `RemoteDisconnected` error when running this script, Windows and WSL are experiencing a "Split-Brain Networking" routing issue. 
+> 
+> **Do not panic.** This is a highly common architecture quirk. Follow the exact fix documented here: 
+> [Troubleshooting: WSL to Windows Localhost Routing](./setup_wsl_networking_fix.md)
