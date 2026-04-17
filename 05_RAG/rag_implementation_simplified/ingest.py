@@ -57,3 +57,30 @@ def create_chunks(documents):
     text_splitter = RecursiveCharacterTextSplitter(chunk_size= 500, chunk_overlap= 200)
     chunks = text_splitter.split_documents(documents)
     return chunks
+
+def create_embeddings(chunks):
+    """
+    Generates and stores vector embeddings for text chunks in a persistent Chroma database, replacing any existing collection.
+
+    Args:
+    chunks (list): A list of Document chunks to be vectorized.
+
+    Returns:
+    None: The function persists the data to the directory specified by DB_NAME and prints the total vector count and embedding dimensionality.
+    """
+
+    if os.path.exists(DB_NAME):
+        Chroma(persist_directory= DB_NAME, embedding_function=  embeddings).delete_collection()
+
+    vectorstore = Chroma.from_documents(
+        documents= chunks,
+        embedding= embeddings,
+        persist_directory= DB_NAME
+    )
+
+    collection = vectorstore._collection
+    count = collection.count()
+
+    sample_embedding = collection.get(limit= 1, include= ['embeddings'])['embeddings'][0]
+    dimensions = len(sample_embedding)
+    print(f'There are {count} Vectors with {dimensions} Dimensions in Vector Store.')
