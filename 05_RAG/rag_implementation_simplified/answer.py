@@ -50,3 +50,24 @@ def combined_question(question: str, history: list[dict]= []) -> str:
 
     prior = '\n'.join(m['content'] for m in history if m['role'] == 'user')
     return prior + '\n' + question
+
+def answer_question(question: str, history: list[dict]= []) -> tuple[str, list[Document]]:
+    """
+    Generates a response to a user inquiry by retrieving relevant context and processing the conversation history through a large language model.
+
+    Args:
+    question (str): The current user query.
+    history (list[dict]): A list of previous interaction turns containing 'role' and 'content'. Defaults to an empty list.
+
+    Returns:
+    tuple[str, list[Document]]: A tuple containing the generated AI response string and the list of Document objects used as context.
+    """
+    combined = combined_question(question, history)
+    docs = fetch_context(combined)
+    context = "\n\n".join(doc.page_content for doc in docs)
+    system_prompt = SYSTEM_PROMPT.format(context=context)
+    messages = [SystemMessage(content=system_prompt)]
+    messages.extend(convert_to_messages(history))
+    messages.append(HumanMessage(content=question))
+    response = llm.invoke(messages)
+    return response.content, docs
