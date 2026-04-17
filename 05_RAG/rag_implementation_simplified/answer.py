@@ -10,7 +10,7 @@ from dotenv import load_dotenv
 load_dotenv()
 MODEL= 'gpt-4.1-nano'
 DB_NAME= str(Path(__file__).parent.parent / 'vector_db')
-embeddings= OpenAIEmbeddings(model= 'text_embedding-3-large')
+embeddings= OpenAIEmbeddings(model= 'text-embedding-3-large')
 RETRIEVAL_K = 10
 
 SYSTEM_PROMPT= """
@@ -48,8 +48,8 @@ def combined_question(question: str, history: list[dict]= []) -> str:
     str: A single string merging past user inputs and the new question, separated by newlines.
     """
 
-    prior = '\n'.join(m['content'] for m in history if m['role'] == 'user')
-    return prior + '\n' + question
+    prior = "\n".join(m["content"] for m in history if m["role"] == "user")
+    return prior + "\n" + question
 
 def answer_question(question: str, history: list[dict]= []) -> tuple[str, list[Document]]:
     """

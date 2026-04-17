@@ -15,11 +15,21 @@ def format_context(context):
     """
 
     result = "<h2 style='color: #ff7800;'>Relevant Context</h2>\n\n"
-
     for doc in context:
         result += f"<span style='color: #ff7800;'>Source: {doc.metadata['source']}</span>\n\n"
         result += doc.page_content + "\n\n"
     return result
+
+def extract_text(content):
+    """
+    Gradio 6+ wraps message content in a list of dictionaries for multimodal support:
+    [{"type": "text", "text": "Hello"}]
+    This function safely extracts the string.
+    """
+    if isinstance(content, list):
+        # Extract text from all text blocks
+        return " ".join([block["text"] for block in content if block.get("type") == "text"])
+    return content
 
 def chat(history):
     """
@@ -31,43 +41,60 @@ def chat(history):
     Returns:
     tuple[list[dict], str]: A tuple containing the updated history list with the new assistant response and a formatted HTML string of the retrieved source documents.
     """
-    last_message = history[-1]['content']
-    prior = history[:-1]
+    raw_last_content = history[-1]["content"]
+    last_message = extract_text(raw_last_content)
+
+    # Rebuild prior history so 'content' is strictly a string, which answer.py expects
+    prior = []
+    for msg in history[:-1]:
+        prior.append({
+            "role": msg["role"],
+            "content": extract_text(msg["content"])
+        })
+
+    # Generate the response via Langchain
     answer, context = answer_question(last_message, prior)
-    history.append({'role': 'assistant', 'content': answer})
+
+    # Append the assistant's response.
+    history.append({"role": "assistant", "content": answer})
     return history, format_context(context)
 
 def main():
-
     def put_message_in_chatbot(message, history):
-        return "", history + [{'role': 'user', 'content': message}]
+        # Append the user's input as a dictionary
+        return "", history + [{"role": "user", "content": message}]
 
-    theme= gr.themes.Ocean(font=["Inter", "system-ui", "sans-serif"])
+    theme = gr.themes.Soft(font=["Inter", "system-ui", "sans-serif"])
 
-    with gr.Blocks(title= "Insurellm Expert Assistant") as ui:
+    with gr.Blocks(title="Insurellm Expert Assistant") as ui:
         gr.Markdown("# 🏢 Insurellm Expert Assistant\nAsk me anything about Insurellm!")
 
         with gr.Row():
-            with gr.Column(scale= 1):
+            with gr.Column(scale=1):
                 chatbot = gr.Chatbot(
-                    label= "💬 Conversation", height=600, show_copy_button=True
+                    label="💬 Conversation",
+                    height=600
                 )
                 message = gr.Textbox(
-                    label= 'Your Question',
-                    placeholder= 'Ask anything about Insurellm...',
-                    show_label= False
+                    label="Your Question",
+                    placeholder="Ask anything about Insurellm...",
+                    show_label=False,
                 )
 
-            with gr.Column(scale= 1):
+            with gr.Column(scale=1):
                 context_markdown = gr.Markdown(
-                    label= '📚 Retrieved Context',
-                    value= '*Retrieved context will appear here*',
-                    container= True,
-                    height= 600
+                    label="📚 Retrieved Context",
+                    value="*Retrieved context will appear here*",
+                    container=True,
+                    height=600,
                 )
 
         message.submit(
-            put_message_in_chatbot, inputs= [message, chatbot], outputs= [message, chatbot]
-        ).then(chat, inputs= chatbot, outputs= [chatbot, context_markdown])
+            put_message_in_chatbot, inputs=[message, chatbot], outputs=[message, chatbot]
+        ).then(chat, inputs=chatbot, outputs=[chatbot, context_markdown])
 
-    ui.launch(theme= theme, inbrowser= True)
+    ui.launch(inbrowser=True, theme= theme)
+
+
+if __name__ == '__main__':
+    main()
