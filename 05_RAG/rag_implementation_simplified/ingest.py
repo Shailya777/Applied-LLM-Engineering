@@ -42,3 +42,18 @@ def fetch_documents():
             documents.append(doc)
 
     return documents
+
+def create_chunks(documents):
+    """
+    Splits a list of documents into smaller, overlapping chunks using recursive character splitting to maintain semantic context.
+
+    Args:
+    documents (list): A list of Document objects to be processed.
+
+    Returns:
+    list: A list of Document chunks, each with a maximum size of 500 characters and a 200-character overlap.
+    """
+
+    text_splitter = RecursiveCharacterTextSplitter(chunk_size= 500, chunk_overlap= 200)
+    chunks = text_splitter.split_documents(documents)
+    return chunks
