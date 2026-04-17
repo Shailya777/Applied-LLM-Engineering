@@ -25,3 +25,13 @@ Context:
 vectorstore = Chroma(persist_directory= DB_NAME, embedding_function= embeddings)
 retriever = vectorstore.as_retriever()
 llm = ChatOpenAI(temperature= 0, model= MODEL)
+
+def fetch_context(question: str) -> list[Document]:
+    """
+    Retrieves relevant document fragments from the vector store based on a provided query.
+
+    Args:question (str): The user query or search string.
+
+    Returns:list[Document]: A list containing the top k most relevant Document objects, where k is defined by RETRIEVAL_K.
+    """
+    return retriever.invoke(question, k= RETRIEVAL_K)
