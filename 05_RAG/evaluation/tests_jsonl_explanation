@@ -1,0 +1,16 @@
+FILE: tests.jsonl
+PURPOSE: The Ground Truth Evaluation Dataset
+
+This file contains the benchmark data used to grade the performance of the RAG system.
+It uses the JSONL (JSON Lines) format, where every single line is a valid, standalone JSON object.
+JSONL is standard in machine learning because it allows massive datasets to be processed
+line-by-line (streaming) without loading the entire file into memory at once.
+
+DATA STRUCTURE PER LINE:
+- question: The simulated user query to be fed into the RAG system.
+- keywords: A list of strict, required terms that MUST appear in the retrieved database chunks
+            for the retrieval to be considered successful. This evaluates the Vector DB.
+- reference_answer: The "perfect" ground-truth answer. The LLM-as-a-judge will compare the
+                    actual generated answer against this string to score accuracy.
+- category: A metadata tag (e.g., 'direct_fact', 'temporal', 'spanning') to help analyze
+            if the RAG system struggles with specific types of logical questions.
