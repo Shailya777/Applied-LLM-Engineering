@@ -29,5 +29,7 @@ To maintain maximum stability and avoid cross-OS file system lag, this project u
 * Local open-source LLMs are executed via Ollama inside Windows Subsystem for Linux (WSL) to fully leverage local NVIDIA RTX GPU acceleration, communicating with the Windows IDE over localhost. 
 * [View the full setup documentation here](./setup/setup_windows_conda.md)
 
+**Note: In fine tuning module, data ingestion, batch processing, and evaluation metric scripts were provided via Ed Donner's LLM Engineering course to establish the baseline for the custom fine-tuning work.**
+
 ---
 *Created by [Shailya](https://github.com/Shailya777)*
